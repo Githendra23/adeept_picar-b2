@@ -5,6 +5,7 @@
 
 import os
 import time
+import subprocess
 
 username = os.popen("echo ${SUDO_USER:-$(who -m | awk '{ print $1 }')}").readline().strip() # pi
 user_home = os.popen('getent passwd %s | cut -d: -f 6'%username).readline().strip()         # home
@@ -12,10 +13,6 @@ user_home = os.popen('getent passwd %s | cut -d: -f 6'%username).readline().stri
 curpath = os.path.realpath(__file__)
 thisPath = "/" + os.path.dirname(curpath)
 
-
-'''
-replaces all occurances of the file string (initial) text with the new next (new_num)
-'''
 def replace_num(file,initial,new_num):
     newline=""
     str_num=str(new_num)
@@ -27,9 +24,6 @@ def replace_num(file,initial,new_num):
     with open(file,"w") as f:
         f.writelines(newline)
 
-'''
-runs given command (cmd
-'''
 def run_command(cmd=""):
     import subprocess
     p = subprocess.Popen(
@@ -38,11 +32,6 @@ def run_command(cmd=""):
     status = p.poll()
     return status, result
 
-'''
-Checks the model of the raspberry pi device through directory\n
-/proc/device-tree/model\n
-returns the model number
-'''
 def check_rpi_model():
     _, result = run_command("cat /proc/device-tree/model |awk '{print $3}'")
     result = result.strip()
@@ -54,16 +43,10 @@ def check_rpi_model():
         case '5':
             return 5
 
-'''
-Returns the debian version from /etc/debian_version
-'''
 def check_raspbain_version():
     _, result = run_command("cat /etc/debian_version|awk -F. '{print $1}'")
     return int(result.strip())
 
-'''
-returns python version info
-'''
 def check_python_version():
     import sys
     major = int(sys.version_info.major)
@@ -83,6 +66,11 @@ def check_os_bit():
     _ , os_bit = run_command("getconf LONG_BIT")
     return int(os_bit)
 
+def check_systemctl_service(service_name):
+    return subprocess.run(
+            ["systemctl", "is-active", service_name],
+            capture_output=True, text=True
+        ).stdout.strip() == "active"
 
 commands_apt = [
 "sudo apt-get update",
@@ -146,57 +134,101 @@ else:
         if mark_pip == 0:
             break
 
-commands_3 = [
-    "cd ~",
-    "sudo git clone https://github.com/oblique/create_ap",
-    "cd create_ap && sudo make install",
-    # "cd //home/pi/create_ap && sudo make install",
-    "sudo apt-get install -y util-linux procps hostapd iproute2 iw haveged dnsmasq"
-]
 
-mark_3 = 0
-for x in range(3):
-    for command in commands_3:
-        if os.system(command) != 0:
-            print("Error running installation step 3")
-            mark_3 = 1
-    if mark_3 == 0:
-        break
+wifi_service_name="wifi-hotspot-manager.service"
+if not check_systemctl_service(wifi_service_name):
+    # wifi and hotspot switch script
+    os.system(f"sudo cp {thisPath}/wifi_hotspot_manager.sh /home/pi")
+    os.system("sudo chmod +x /home/pi/wifi_hotspot_manager.sh")
 
-try:
-    replace_num("/boot/config.txt", '#dtparam=i2c_arm=on','dtparam=i2c_arm=on\nstart_x=1\n')
-except:
-    print('Error updating boot config to enable i2c; please try again.')
 
-try:
-    os.system("sudo touch /"+ user_home +"/startup.sh")
-    with open("/"+ user_home +"/startup.sh",'w') as file_to_write:
-        #you can choose how to control the robot
-        file_to_write.write("#!/bin/sh\nsleep 5\nsudo python3 " + thisPath + "/web/webServer.py")
-except:
-    pass
+    wifi_service_content="""[Unit]
+Description=WiFi and Hotspot Manager Service
+After=network.target NetworkManager.service
+Wants=NetworkManager.service
 
-os.system("sudo chmod 777 /"+ user_home +"/startup.sh")
+[Service]
+Type=oneshot
+ExecStart=/home/pi/wifi_hotspot_manager.sh  
+User=root
+RemainAfterExit=yes
 
-if not os.path.exists("/etc/rc.local"):
-    print('/etc/rc.local does not exist. It is required to run the program when the raspberry pi starts. \nHowever it is not required for function. \nWould you like to create a /etc/rc.local/ file (recommended)?')
-    if input('(y/n): ').strip().lower() == "y":
-        os.system("sudo touch /etc/rc.local")
-        os.system("sudo chown root:root /etc/rc.local")
-        os.system("sudo chmod 755 /etc/rc.local")
-        try:
-            with open("/etc/rc.local", 'w') as file_to_write:
-                file_to_write.write('#!/bin/sh -e\n/' + user_home + '/startup.sh start\nexit 0')
-        except:
-            print('Error: writing /etc/rc.local/ failed.')
-    else:
-        print("Program setup without /etc/rc.local complete. \nNote: you will have to run startup.sh manually to set servos for mechanical assembly.")
-else: #there is /etc/rc.local
+[Install]
+WantedBy=multi-user.target
+"""
+    # system-level services must be placed in this directory
+    wifi_service_file_path = "/etc/systemd/system/" + wifi_service_name 
+
     try:
-        replace_num('/etc/rc.local','fi','fi\n/'+ user_home +'/startup.sh start')
-        print('/etc/rc.local setup complete. After turning the Raspberry Pi on again, the Raspberry Pi will automatically run the program to set the servos port signal to turn the servos to the middle position, which is convenient for mechanical assembly.')
+        # Write to the service file (requires root privileges)
+        with open(wifi_service_file_path, "w") as f:
+            f.write(wifi_service_content)
+        print(f"Service file created: {wifi_service_file_path}")
+
+        # Set file permissions
+        os.chmod(wifi_service_file_path, 0o644)
+
+        # Reload systemd configuration, enable and start the service
+        subprocess.run(["sudo", "systemctl", "daemon-reload"], check=True)
+        subprocess.run(["sudo", "systemctl", "enable", wifi_service_name], check=True)
+
+        print(f"Service {wifi_service_name} has been enabled and started")
+    except subprocess.CalledProcessError as e:
+        print(f"Command execution failed: {e}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+
+robot_service_name="Adeept_Robot.service"
+if not check_systemctl_service(robot_service_name):
+    # auto start script
+    try:
+        os.system("sudo touch /"+ user_home +"/startup.sh")
+        with open("/"+ user_home +"/startup.sh",'w') as file_to_write:
+            #you can choose how to control the robot
+            file_to_write.write("#!/bin/sh\nsleep 5\nsudo python3 " + thisPath + "/web/webServer.py")
     except:
-        print('Error adding to /startup.sh')
+        pass
+    os.system("sudo chmod 777 /"+ user_home +"/startup.sh")
+
+    #config systemctl service
+    # Define the content of the systemd service file
+    robot_service_content=f"""[Unit]
+Description=Auto-start robot control script
+After={wifi_service_name} 
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/home/pi
+ExecStart=/home/pi/startup.sh  
+Restart=no
+
+[Install]
+WantedBy=multi-user.target
+"""
+
+    # Path for the service file (system-level services must be placed in this directory)
+    robot_service_file_path = "/etc/systemd/system/" + robot_service_name 
+
+    try:
+        # Write to the service file (requires root privileges)
+        with open(robot_service_file_path, "w") as f:
+            f.write(robot_service_content)
+        print(f"Service file created: {robot_service_file_path}")
+
+        # Set file permissions
+        os.chmod(robot_service_file_path, 0o644)
+
+        # Reload systemd configuration, enable and start the service
+        subprocess.run(["sudo", "systemctl", "daemon-reload"], check=True)
+        subprocess.run(["sudo", "systemctl", "enable", robot_service_name], check=True)
+
+        print(f"Service {robot_service_name} has been enabled and started")
+    except subprocess.CalledProcessError as e:
+        print(f"Command execution failed: {e}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 print('The program in Raspberry Pi has been installed, disconnected and restarted. \nYou can now power off the Raspberry Pi to install the camera and driver board (Robot HAT).')
 print('restarting...')
