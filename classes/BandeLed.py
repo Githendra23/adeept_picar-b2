@@ -272,8 +272,11 @@ class BandeLed(threading.Thread):
         self.show()
         
     def set_back_leds(self, colour = [255, 255, 255], brightness = 255):
-        self.led_brightness = brightness
-        self.set_led_color(2, colour[0], colour[1], colour[2])
+        BACK_LED = [8, 9, 10, 11, 12, 13]
+        
+        for led_num in BACK_LED:
+            self.set_led(led_num, colour, brightness)
+            
         self.show()
         
 if __name__ == '__main__':
