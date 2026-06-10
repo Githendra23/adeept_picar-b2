@@ -3,7 +3,8 @@ import threading
 import numpy
 from numpy import sin, cos, pi
 import time
-class Adeept_SPI_LedPixel(threading.Thread):
+
+class BandeLed(threading.Thread):
     def __init__(self, count = 8, bright = 255, sequence='GRB', bus = 0, device = 0, *args, **kwargs):
         self.set_led_type(sequence)
         self.set_led_count(count)
@@ -16,7 +17,7 @@ class Adeept_SPI_LedPixel(threading.Thread):
         self.breathSteps = 10
         #self.spi_gpio_info()
         self.set_all_led_color(0,0,0)
-        super(Adeept_SPI_LedPixel, self).__init__(*args, **kwargs)
+        super(BandeLed, self).__init__(*args, **kwargs)
         self.__flag = threading.Event()
         self.__flag.clear()
     def led_begin(self, bus = 0, device = 0):
@@ -228,6 +229,7 @@ class Adeept_SPI_LedPixel(threading.Thread):
                 self.set_all_led_color(self.colorBreathR-(self.colorBreathR*i/self.breathSteps), self.colorBreathG-(self.colorBreathG*i/self.breathSteps), self.colorBreathB-(self.colorBreathB*i/self.breathSteps))
                 #self.show()
                 time.sleep(0.03)
+                
     def policeProcessing(self):
         while self.lightMode == 'police':
             for i in range(0,3):
@@ -263,27 +265,27 @@ class Adeept_SPI_LedPixel(threading.Thread):
             self.__flag.wait()
             self.lightChange()
             pass
-
-    # Codé par Githendra
+        
     def set_led_color(self, led_num, colour = [255, 255, 255], brightness = 255):
         self.led_brightness = brightness
         self.set_led_color(led_num, colour[0], colour[1], colour[2])
         self.show()
-
+        
 if __name__ == '__main__':
     import os
     
     print("spidev version is ", spidev.__version__)
     print("spidev device as show:")
     os.system("ls /dev/spi*")
-    
-    led = Adeept_SPI_LedPixel(14, 255)            # Use MOSI for /dev/spidev0 to drive the lights
 
     try:
+        led = BandeLed(14, 255)
+        
         if led.check_spi_state() != 0:
             led.set_led_color(2, [255, 0, 255],255)
             time.sleep(7000)
         else:
             led.led_close()
+            
     except KeyboardInterrupt:
         led.led_close()
