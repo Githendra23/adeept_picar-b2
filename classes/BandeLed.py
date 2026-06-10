@@ -279,6 +279,30 @@ class BandeLed(threading.Thread):
             
         self.show()
         
+    def set_front_leds(self, colour = [255, 255, 255], brightness = 255):
+        FRONT_LED = [0, 1]
+        
+        for led_num in FRONT_LED:
+            self.set_led(led_num, colour, brightness)
+            
+        self.show()
+        
+    def set_bottomLeft_leds(self, colour = [255, 255, 255], brightness = 255):
+        FRONT_LED = [5, 6, 7]
+        
+        for led_num in FRONT_LED:
+            self.set_led(led_num, colour, brightness)
+            
+        self.show()
+        
+    def set_bottomRight_leds(self, colour = [255, 255, 255], brightness = 255):
+        FRONT_LED = [2, 3, 4]
+        
+        for led_num in FRONT_LED:
+            self.set_led(led_num, colour, brightness)
+            
+        self.show()
+        
 if __name__ == '__main__':
     import os
     
