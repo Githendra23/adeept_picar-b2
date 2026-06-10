@@ -114,20 +114,19 @@ class LEDAvant():
         time.sleep(delay)
 
     def warning(self) :
-        while True :
-            self.switch(14)
-            self.switch(15)
-            self.switch(17)
-            self.switch(18)
+        self.switch(14)
+        self.switch(15)
+        self.switch(17)
+        self.switch(18)
 
-            time.sleep(0.5)
+        time.sleep(0.5)
 
-            self.switch(24)
-            self.switch(25)
-            self.switch(27)
-            self.switch(28)
+        self.switch(24)
+        self.switch(25)
+        self.switch(27)
+        self.switch(28)
 
-            time.sleep(0.5)
+        time.sleep(0.5)
 
     def appel_de_phares(self) :
         delay = 0.1
@@ -160,3 +159,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
