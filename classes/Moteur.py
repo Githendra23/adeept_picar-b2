@@ -31,8 +31,7 @@ i2c = busio.I2C(SCL, SDA)
 pwm_motor = PCA9685(i2c, address=0x5f) #default 0x40
 pwm_motor.frequency = 50
 
-motor1 = motor.DCMotor(pwm_motor.channels[MOTOR_M1_IN1],pwm_motor.channels[MOTOR_M1_IN2] )
-motor1.decay_mode = (motor.SLOW_DECAY)
+
 
 def check_speed(vitesse) :
     if(vitesse > 100) :
@@ -40,7 +39,6 @@ def check_speed(vitesse) :
     elif(vitesse < 0) :
         vitesse = 0
     return vitesse
-
 
 def progress_start(speed) :
     speed = check_speed(speed)
@@ -51,26 +49,24 @@ def progress_start(speed) :
 
 class Moteur:
 
-    def __init__(self, moteur):
-        self.moteur = moteur
-
+    def __init__(self):
+        self.moteur = motor.DCMotor(pwm_motor.channels[MOTOR_M1_IN1],pwm_motor.channels[MOTOR_M1_IN2] )
+        self.moteur.decay_mode = (motor.SLOW_DECAY)
+    
     # Pour avancer
     def avancer(self, vitesse):
         vitesse = check_speed(vitesse)
         print(f"Le moteur avance ! Vitesse : {vitesse}")
         
-        while True :
-            self.moteur.throttle = map(vitesse, 0, 100, 0, 1.0)
-            time.sleep(0.1)
+        self.moteur.throttle = map(vitesse, 0, 100, 0, 1.0)
+        # time.sleep(2)
 
     # Pour reculer
     def reculer(self, vitesse):
         vitesse = check_speed(vitesse)
         print(f"Le moteur recule ! Vitesse : {vitesse}")
 
-        while True :
-            self.moteur.throttle = -map(vitesse, 0, 100, 0, 1.0)
-            time.sleep(0.1)
+        self.moteur.throttle = -map(vitesse, 0, 100, 0, 1.0)
 
     # Arrêter le moteur
     def stop(self):
@@ -92,7 +88,7 @@ class Moteur:
             self.moteur.throttle = 1.0
             time.sleep(0.1)
 
-m1 = Moteur(motor1)
+m1 = Moteur()
 
 if __name__ == '__main__':
     try:
@@ -113,3 +109,4 @@ if __name__ == '__main__':
         print("Programme interrompu.")
     finally :
         m1.destroy()
+
