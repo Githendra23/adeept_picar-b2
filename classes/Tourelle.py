@@ -22,3 +22,7 @@ class Tourelle:
 
         if (angle >= ANGLE_MIN and angle <= ANGLE_MAX):
             self.controller.set_angle(self.CHANNEL_TILT, angle)
+
+    def reset(self):
+        self.controller.set_angle(self.CHANNEL_PAN, 97)
+        self.controller.set_angle(self.CHANNEL_TILT, 96)
