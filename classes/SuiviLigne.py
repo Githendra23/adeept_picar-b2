@@ -1,7 +1,7 @@
 import time
-from classes.Roues import Roues
-from classes.ServoController import ServoController
-from classes.CapteurSuiviLigne import CapteurSuiviLigne
+import Roues
+import ServoController
+import CapteurSuiviLigne
 
 ETAT_0, ETAT_1, ETAT_2, ETAT_3, ETAT_4 = range(5)
 
@@ -22,12 +22,16 @@ ANGLES_RELATIFS = {
 }
 
 def suivi_ligne():
-    capteur = CapteurSuiviLigne()
-    roues = Roues(ServoController())
+    capteur = CapteurSuiviLigne.CapteurSuiviLigne()
+    roues = Roues.Roues(ServoController())
     centre = roues.getAngleCenter()
     etat = ETAT_0
 
+    print("ICI 1")
+
     while True:
+
+        print("ICI 2")
         statut = capteur.statut()
         nouvel_etat = TRANSITIONS.get(etat, {}).get(statut, etat)
 
@@ -40,3 +44,7 @@ def suivi_ligne():
         roues.turn(angle)
 
         time.sleep(0.05)
+
+
+if __name__ == "__main__" :
+    suivi_ligne()
