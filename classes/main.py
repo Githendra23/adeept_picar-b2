@@ -1,9 +1,7 @@
 import CapteurSuiviLigne
 import Moteur
 
-
 import time
-
 
 
 if __name__ == '__main__':
