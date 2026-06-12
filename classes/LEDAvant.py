@@ -2,16 +2,16 @@ from gpiozero import PWMOutputDevice as PWM
 from gpiozero import LED
 import time
 
-Left_R = 13
-Left_G = 19
-Left_B = 0
-
-Right_R = 1
-Right_G = 5
-Right_B = 6
-
 class LEDAvant():
     def __init__(self):
+        Left_R = 13
+        Left_G = 19
+        Left_B = 0
+
+        Right_R = 1
+        Right_G = 5
+        Right_B = 6
+
         self.led1 = LED(9)
         self.led2 = LED(25)
         self.led3 = LED(11)
