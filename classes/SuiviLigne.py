@@ -7,12 +7,12 @@ from ServoController import ServoController
 
 
 
-VITESSE_CROISIERE   = 40   # ligne bien centrée
-VITESSE_CORRECTION  = 25   # ajustement léger (perte 1 LED)
-VITESSE_VIRAGE_FORT = 20   # braquage important
-VITESSE_LENTE       = 10   # récupération (perte 2 LEDs)
-VITESSE_RECUL       = 15   # marche arrière
-VITESSE_MINI        = 5    # micro-ajustements
+VITESSE_CROISIERE   = 20   # ligne bien centrée
+VITESSE_CORRECTION  = 15   # ajustement léger (perte 1 LED)
+VITESSE_VIRAGE_FORT = 10   # braquage important
+VITESSE_LENTE       = 5   # récupération (perte 2 LEDs)
+VITESSE_RECUL       = 5   # marche arrière
+VITESSE_MINI        = 4    # micro-ajustements
 
 ANGLE_CENTRE      = 90
 ANGLE_MIN         = 0
