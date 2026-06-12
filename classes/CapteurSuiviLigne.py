@@ -20,13 +20,6 @@ class CapteurSuiviLigne:
     def statut_droite(self):
         return self._capteur_droite.value
 
-    def statut(self):
-        return (
-            self.statut_gauche(),
-            self.statut_milieu(),
-            self.statut_droite()
-        )
-
     def printState(self) :
         print(f"Capteur gauche : {self.statut_gauche()}")
         print(f"Capteur central : {self.statut_milieu()}")
@@ -37,11 +30,8 @@ if __name__ == '__main__':
         capteur_ligne = CapteurSuiviLigne()
 
         while True:
-            print(
-                'gauche: %0.1f milieu: %0.1f droite: %0.1f'
-                % capteur_ligne.statut()
-            )
-            time.sleep(0.3)
+            capteur_ligne.printState()
+            time.sleep(0.2)
 
     except KeyboardInterrupt:
         pass
