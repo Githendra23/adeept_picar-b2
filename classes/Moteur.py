@@ -69,6 +69,13 @@ class Moteur:
         print("Le moteur est à l'arrêt !")
         self.moteur.throttle = 0
     
+
+    def TC(self, speed) :
+        self.stop()
+        time.sleep(1/20)
+        self.avancer(speed)
+        time.sleep(1/20)
+
     # Déconnecter le moteur
     def destroy(self):
         print("Destruction du moteur.")
@@ -84,12 +91,20 @@ if __name__ == '__main__':
         gear = int(sys.argv[1])
         if(gear == 0) : # Pour arrêter le moteur
             unMoteur.stop()
+
         elif(gear == 1) : # Pour avancer
             speed = 30
-            unMoteur.progress_start(speed,1)
+            unMoteur.avancer(speed)
+            time.sleep(2)
+            
+            i = 0
+            for i in range (20) :
+                unMoteur.TC(speed)
+
         elif(gear == 2) : # Pour reculer
             speed = 30
             unMoteur.progress_start(speed,-1)
+            
         else : # Si l'utilisateur ne saisit pas une bonne entrée
             print("0 pour NEUTRE")
             print("1 pour AVANCER")
