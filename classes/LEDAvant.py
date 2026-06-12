@@ -24,6 +24,16 @@ class LEDAvant():
         self.R_G = PWM(pin=Right_G, initial_value=1.0, frequency=2000)
         self.R_B = PWM(pin=Right_B, initial_value=1.0, frequency=2000)
 
+    def ledR(self, colour = [1, 1, 1]):
+        self.R_R.value = colour[0]
+        self.R_G.value = colour[1]
+        self.R_B.value = colour[2]
+
+    def ledG(self, colour = [1, 1, 1]):
+        self.L_R.value = colour[0]
+        self.L_G.value = colour[1]
+        self.L_B.value = colour[2]
+
     def switch(self, commande):
         match commande:
             case 11:
@@ -89,12 +99,10 @@ class LEDAvant():
         print("║Exemple : 24 = éteindre L_R║")
         print("╚═══════════════════════════╝")
 
-def main():
+if __name__ == "__main__":
     robot = LEDAvant()
+
     while True:
         robot.instruction()
         commande = int(input("Commande : "))
         robot.switch(commande)
-
-if __name__ == "__main__":
-    main()
